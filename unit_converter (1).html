@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal Unit Converter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            padding: 40px;
+            text-align: center;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .converter-section {
+            padding: 40px;
+        }
+
+        .category-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 30px;
+            justify-content: center;
+        }
+
+        .category-btn {
+            padding: 12px 24px;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .category-btn:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .category-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .converter-grid {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 30px;
+            align-items: center;
+            margin-top: 30px;
+        }
+
+        .unit-group {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .unit-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .unit-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            transition: border-color 0.3s ease;
+        }
+
+        .unit-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .unit-select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1rem;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+
+        .unit-select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .swap-btn {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            cursor: pointer;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(238, 90, 82, 0.3);
+        }
+
+        .swap-btn:hover {
+            transform: rotate(180deg) scale(1.1);
+        }
+
+        .result {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            border-radius: 15px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .history {
+            margin-top: 30px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        .history h3 {
+            margin-bottom: 15px;
+            color: #495057;
+        }
+
+        .history-item {
+            background: white;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        @media (max-width: 768px) {
+            .converter-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .converter-section {
+                padding: 20px;
+            }
+
+            .category-selector {
+                gap: 10px;
+            }
+
+            .category-btn {
+                padding: 10px 16px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Universal Unit Converter</h1>
+            <p>Convert between various units with precision and ease</p>
+        </div>
+
+        <div class="converter-section">
+            <div class="category-selector">
+                <button class="category-btn active" data-category="length">Length</button>
+                <button class="category-btn" data-category="weight">Weight</button>
+                <button class="category-btn" data-category="temperature">Temperature</button>
+                <button class="category-btn" data-category="volume">Volume</button>
+                <button class="category-btn" data-category="area">Area</button>
+                <button class="category-btn" data-category="speed">Speed</button>
+                <button class="category-btn" data-category="time">Time</button>
+                <button class="category-btn" data-category="frequency">Frequency</button>
+                <button class="category-btn" data-category="capacitance">Capacitance</button>
+                <button class="category-btn" data-category="power">Electric Power</button>
+            </div>
+
+            <div class="converter-grid">
+                <div class="unit-group">
+                    <label>From:</label>
+                    <input type="number" class="unit-input" id="fromValue" placeholder="Enter value">
+                    <select class="unit-select" id="fromUnit"></select>
+                </div>
+
+                <button class="swap-btn" id="swapBtn">⇄</button>
+
+                <div class="unit-group">
+                    <label>To:</label>
+                    <input type="number" class="unit-input" id="toValue" placeholder="Result" readonly>
+                    <select class="unit-select" id="toUnit"></select>
+                </div>
+            </div>
+
+            <div class="result" id="result">Enter a value to see the conversion</div>
+
+            <div class="history">
+                <h3>Recent Conversions</h3>
+                <div id="historyList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const conversions = {
+            length: {
+                // SI Base unit: meter
+                meter: 1,
+                // SI prefixes
+                yottameter: 1e24,
+                zettameter: 1e21,
+                exameter: 1e18,
+                petameter: 1e15,
+                terameter: 1e12,
+                gigameter: 1e9,
+                megameter: 1e6,
+                kilometer: 1e3,
+                hectometer: 1e2,
+                decameter: 1e1,
+                decimeter: 1e-1,
+                centimeter: 1e-2,
+                millimeter: 1e-3,
+                micrometer: 1e-6,
+                nanometer: 1e-9,
+                picometer: 1e-12,
+                femtometer: 1e-15,
+                attometer: 1e-18,
+                zeptometer: 1e-21,
+                yoctometer: 1e-24,
+                // Special units
+                angstrom: 1e-10,
+                // Imperial/US units
+                inch: 0.0254,
+                foot: 0.3048,
+                yard: 0.9144,
+                mile: 1609.34,
+                'nautical mile': 1852,
+                // Astronomical units
+                'astronomical unit': 149597870700,
+                'light year': 9460730472580800,
+                parsec: 30856775814913673
+            },
+            weight: {
+                // SI Base unit: kilogram
+                kilogram: 1,
+                // SI prefixes for gram
+                yottagram: 1e21,
+                zettagram: 1e18,
+                exagram: 1e15,
+                petagram: 1e12,
+                teragram: 1e9,
+                gigagram: 1e6,
+                megagram: 1e3,
+                gram: 1e-3,
+                decigram: 1e-4,
+                centigram: 1e-5,
+                milligram: 1e-6,
+                microgram: 1e-9,
+                nanogram: 1e-12,
+                picogram: 1e-15,
+                femtogram: 1e-18,
+                attogram: 1e-21,
+                zeptogram: 1e-24,
+                yoctogram: 1e-27,
+                // Common units
+                ton: 1000,
+                'metric ton': 1000,
+                // Imperial/US units
+                pound: 0.453592,
+                ounce: 0.0283495,
+                stone: 6.35029,
+                'short ton': 907.185,
+                'long ton': 1016.05
+            },
+            temperature: {
+                celsius: (val, to) => {
+                    if (to === 'fahrenheit') return val * 9/5 + 32;
+                    if (to === 'kelvin') return val + 273.15;
+                    if (to === 'rankine') return (val + 273.15) * 9/5;
+                    return val;
+                },
+                fahrenheit: (val, to) => {
+                    if (to === 'celsius') return (val - 32) * 5/9;
+                    if (to === 'kelvin') return (val - 32) * 5/9 + 273.15;
+                    if (to === 'rankine') return val + 459.67;
+                    return val;
+                },
+                kelvin: (val, to) => {
+                    if (to === 'celsius') return val - 273.15;
+                    if (to === 'fahrenheit') return (val - 273.15) * 9/5 + 32;
+                    if (to === 'rankine') return val * 9/5;
+                    return val;
+                },
+                rankine: (val, to) => {
+                    if (to === 'celsius') return (val * 5/9) - 273.15;
+                    if (to === 'fahrenheit') return val - 459.67;
+                    if (to === 'kelvin') return val * 5/9;
+                    return val;
+                }
+            },
+            volume: {
+                // SI derived unit: cubic meter
+                'cubic meter': 1,
+                // SI prefixes for liter
+                kiloliter: 1,
+                liter: 1e-3,
+                deciliter: 1e-4,
+                centiliter: 1e-5,
+                milliliter: 1e-6,
+                microliter: 1e-9,
+                nanoliter: 1e-12,
+                picoliter: 1e-15,
+                // Cubic units
+                'cubic kilometer': 1e9,
+                'cubic decimeter': 1e-3,
+                'cubic centimeter': 1e-6,
+                'cubic millimeter': 1e-9,
+                // Imperial/US units
+                gallon: 3.78541e-3,
+                quart: 9.46353e-4,
+                pint: 4.73176e-4,
+                cup: 2.36588e-4,
+                'fluid ounce': 2.95735e-5,
+                tablespoon: 1.47868e-5,
+                teaspoon: 4.92892e-6,
+                // Imperial UK units
+                'imperial gallon': 4.54609e-3,
+                'imperial quart': 1.13652e-3,
+                'imperial pint': 5.68261e-4
+            },
+            area: {
+                // SI derived unit: square meter
+                'square meter': 1,
+                // SI prefixes
+                'square kilometer': 1e6,
+                'square hectometer': 1e4,
+                'square decameter': 1e2,
+                'square decimeter': 1e-2,
+                'square centimeter': 1e-4,
+                'square millimeter': 1e-6,
+                // Common units
+                hectare: 1e4,
+                are: 1e2,
+                // Imperial/US units
+                'square mile': 2.58999e6,
+                acre: 4046.86,
+                'square yard': 0.836127,
+                'square foot': 0.092903,
+                'square inch': 6.4516e-4
+            },
+            speed: {
+                // SI derived unit: meters per second
+                'meters per second': 1,
+                'kilometers per second': 1e3,
+                'kilometers per hour': 1/3.6,
+                'centimeters per second': 1e-2,
+                'millimeters per second': 1e-3,
+                // Imperial/US units
+                'miles per hour': 0.44704,
+                'miles per second': 1609.34,
+                'feet per second': 0.3048,
+                'feet per minute': 0.00508,
+                'inches per second': 0.0254,
+                // Maritime/Aviation
+                knot: 0.514444,
+                // Light speed
+                'speed of light': 299792458
+            },
+            time: {
+                // SI base unit: second
+                second: 1,
+                // SI prefixes
+                kilosecond: 1e3,
+                millisecond: 1e-3,
+                microsecond: 1e-6,
+                nanosecond: 1e-9,
+                picosecond: 1e-12,
+                femtosecond: 1e-15,
+                attosecond: 1e-18,
+                // Common units
+                minute: 60,
+                hour: 3600,
+                day: 86400,
+                week: 604800,
+                month: 2629746, // Average month (365.25 days / 12)
+                year: 31557600, // Julian year (365.25 days)
+                decade: 315576000,
+                century: 3155760000,
+                millennium: 31557600000,
+                // Planck time
+                'planck time': 5.39106e-44
+            },
+            frequency: {
+                // SI derived unit: hertz (1/second)
+                hertz: 1,
+                // SI prefixes
+                yottahertz: 1e24,
+                zettahertz: 1e21,
+                exahertz: 1e18,
+                petahertz: 1e15,
+                terahertz: 1e12,
+                gigahertz: 1e9,
+                megahertz: 1e6,
+                kilohertz: 1e3,
+                decihertz: 1e-1,
+                centihertz: 1e-2,
+                millihertz: 1e-3,
+                microhertz: 1e-6,
+                nanohertz: 1e-9,
+                picohertz: 1e-12,
+                femtohertz: 1e-15,
+                attohertz: 1e-18,
+                zeptohertz: 1e-21,
+                yoctohertz: 1e-24,
+                // Common units
+                'revolutions per minute': 1/60,
+                'revolutions per second': 1,
+                'cycles per second': 1,
+                // Angular frequency (rad/s to Hz conversion factor: 1/(2π))
+                'radians per second': 1/(2*Math.PI)
+            },
+            capacitance: {
+                // SI derived unit: farad
+                farad: 1,
+                // SI prefixes
+                yottafarad: 1e24,
+                zettafarad: 1e21,
+                exafarad: 1e18,
+                petafarad: 1e15,
+                terafarad: 1e12,
+                gigafarad: 1e9,
+                megafarad: 1e6,
+                kilofarad: 1e3,
+                hectofarad: 1e2,
+                decafarad: 1e1,
+                decifarad: 1e-1,
+                centifarad: 1e-2,
+                millifarad: 1e-3,
+                microfarad: 1e-6,
+                nanofarad: 1e-9,
+                picofarad: 1e-12,
+                femtofarad: 1e-15,
+                attofarad: 1e-18,
+                zeptofarad: 1e-21,
+                yoctofarad: 1e-24,
+                // Common abbreviations
+                'uF': 1e-6,  // microfarad
+                'nF': 1e-9,  // nanofarad  
+                'pF': 1e-12, // picofarad
+                'fF': 1e-15, // femtofarad
+                'aF': 1e-18  // attofarad
+            },
+            power: {
+                // SI derived unit: watt
+                watt: 1,
+                // SI prefixes
+                yottawatt: 1e24,
+                zettawatt: 1e21,
+                exawatt: 1e18,
+                petawatt: 1e15,
+                terawatt: 1e12,
+                gigawatt: 1e9,
+                megawatt: 1e6,
+                kilowatt: 1e3,
+                hectowatt: 1e2,
+                decawatt: 1e1,
+                deciwatt: 1e-1,
+                centiwatt: 1e-2,
+                milliwatt: 1e-3,
+                microwatt: 1e-6,
+                nanowatt: 1e-9,
+                picowatt: 1e-12,
+                femtowatt: 1e-15,
+                attowatt: 1e-18,
+                zeptowatt: 1e-21,
+                yoctowatt: 1e-24,
+                // Mechanical power units
+                horsepower: 745.7, // mechanical horsepower
+                'metric horsepower': 735.5,
+                'electrical horsepower': 746,
+                // Energy per time units
+                'BTU per hour': 0.293071,
+                'BTU per minute': 17.5843,
+                'BTU per second': 1055.06,
+                'calories per second': 4.184,
+                'kilocalories per hour': 1.16222,
+                // Electrical units
+                'volt-ampere': 1, // In DC circuits, VA = W
+                'kilovolt-ampere': 1e3,
+                'megavolt-ampere': 1e6,
+                // Solar power
+                'watts per square meter': 1 // W/m² (irradiance unit, but useful for solar calculations)
+            }
+        };
+
+        let currentCategory = 'length';
+        let history = [];
+
+        const fromValue = document.getElementById('fromValue');
+        const toValue = document.getElementById('toValue');
+        const fromUnit = document.getElementById('fromUnit');
+        const toUnit = document.getElementById('toUnit');
+        const result = document.getElementById('result');
+        const swapBtn = document.getElementById('swapBtn');
+        const historyList = document.getElementById('historyList');
+
+        function populateUnits(category) {
+            fromUnit.innerHTML = '';
+            toUnit.innerHTML = '';
+            
+            const units = Object.keys(conversions[category]);
+            units.forEach(unit => {
+                fromUnit.innerHTML += `<option value="${unit}">${unit}</option>`;
+                toUnit.innerHTML += `<option value="${unit}">${unit}</option>`;
+            });
+            
+            if (units.length > 1) {
+                toUnit.selectedIndex = 1;
+            }
+        }
+
+        function convert() {
+            const value = parseFloat(fromValue.value);
+            if (isNaN(value)) {
+                toValue.value = '';
+                result.textContent = 'Enter a valid number';
+                return;
+            }
+
+            const from = fromUnit.value;
+            const to = toUnit.value;
+
+            let convertedValue;
+
+            if (currentCategory === 'temperature') {
+                convertedValue = conversions[currentCategory][from](value, to);
+            } else {
+                const baseValue = value * conversions[currentCategory][from];
+                convertedValue = baseValue / conversions[currentCategory][to];
+            }
+
+            toValue.value = convertedValue.toFixed(6).replace(/\.?0+$/, '');
+            result.textContent = `${value} ${from} = ${toValue.value} ${to}`;
+
+            addToHistory(`${value} ${from} = ${toValue.value} ${to}`);
+        }
+
+        function addToHistory(conversion) {
+            history.unshift(conversion);
+            if (history.length > 5) {
+                history.pop();
+            }
+            updateHistoryDisplay();
+        }
+
+        function updateHistoryDisplay() {
+            historyList.innerHTML = '';
+            if (history.length === 0) {
+                historyList.innerHTML = '<div class="history-item">No conversions yet</div>';
+                return;
+            }
+            history.forEach(item => {
+                historyList.innerHTML += `<div class="history-item">${item}</div>`;
+            });
+        }
+
+        function swap() {
+            const tempValue = fromValue.value;
+            const tempUnit = fromUnit.value;
+            
+            fromValue.value = toValue.value;
+            fromUnit.value = toUnit.value;
+            toValue.value = tempValue;
+            toUnit.value = tempUnit;
+            
+            if (fromValue.value) {
+                convert();
+            }
+        }
+
+        // Event listeners
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelector('.category-btn.active').classList.remove('active');
+                btn.classList.add('active');
+                currentCategory = btn.dataset.category;
+                populateUnits(currentCategory);
+                fromValue.value = '';
+                toValue.value = '';
+                result.textContent = 'Enter a value to see the conversion';
+            });
+        });
+
+        fromValue.addEventListener('input', convert);
+        fromUnit.addEventListener('change', convert);
+        toUnit.addEventListener('change', convert);
+        swapBtn.addEventListener('click', swap);
+
+        // Initialize
+        populateUnits(currentCategory);
+        updateHistoryDisplay();
+    </script>
+</body>
+</html>
